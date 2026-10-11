@@ -653,6 +653,33 @@ a.btn{text-decoration:none}
 .mdi{display:flex;align-items:center;gap:7px;text-align:left}
 .mdi b{display:block;font:16px/1.2 var(--f-display);font-weight:400}
 .mdi small{font-size:12px;color:var(--cocoa-soft)}
+
+/* 말씀 미션 */
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.plan{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px 9px;border-radius:15px;background:#fff;border:2px solid var(--edge2);box-shadow:0 3px 0 var(--edge2);cursor:pointer;color:var(--ink)}
+.plan b{font:16px/1.2 var(--f-display);font-weight:400}
+.plan span{font-size:12px;color:var(--cocoa-soft)}
+.plan .pb{display:inline-flex;align-items:center;gap:3px;color:var(--violet);font-family:var(--f-display)}
+.plan .pb .tal{width:10px;height:10px}
+.mission.on{border-color:#C9B6FF;box-shadow:0 4px 0 #C9B6FF;background:linear-gradient(#FFFFFF,#F7F3FF)}
+.mission.on .ribbon{background:linear-gradient(#B9A0FF,#7253BD);border-color:#45338A;text-shadow:0 1px 0 #45338A;box-shadow:inset 0 2px 0 rgba(255,255,255,.38),0 3px 0 rgba(69,51,138,.35)}
+.mtop{display:flex;align-items:center;gap:10px}
+.mt{display:flex;flex-direction:column;min-width:0;flex:1}
+.mt small{font:12px var(--f-display);color:var(--violet)}
+.mt b{font:18px/1.3 var(--f-display);font-weight:400;word-break:keep-all}
+.mday{flex:none;font:20px var(--f-display);color:var(--ink);text-align:right}
+.mday small{font-size:12px;color:var(--cocoa-soft)}
+.mbar{position:relative;height:22px;border-radius:12px;background:#EEE6FB;overflow:hidden;border:2px solid #D9CCFA}
+.mbar i{display:block;height:100%;background:linear-gradient(90deg,#C9B6FF,#8E6FD8);border-radius:10px}
+.mbar span{position:absolute;inset:0;font:12px/18px var(--f-display);color:var(--ink);text-align:center}
+.mdone{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px}
+.mdone b{font:22px var(--f-display);font-weight:400;color:var(--violet)}
+.mdone span{font-size:13px;color:var(--cocoa-soft)}
+.rwlist{display:flex;flex-direction:column;gap:5px;background:#fff;border:2px solid var(--edge2);border-radius:14px;padding:10px 12px;font-size:14px}
+.rwlist span{display:flex;justify-content:space-between;gap:8px}
+.rwlist b{font-family:var(--f-display);font-weight:400;color:var(--violet)}
+.carry{display:flex;align-items:center;gap:8px;font-size:14px;background:#FFF8EC;border:2px solid var(--edge2);border-radius:12px;padding:8px 10px}
+.carry input{width:20px;height:20px;accent-color:#7253BD}
 </style>
 <style>html{-webkit-text-size-adjust:100%}button,.tabs,.hud{-webkit-user-select:none;user-select:none}button{touch-action:manipulation}canvas{-webkit-touch-callout:none}</style>
 </head>
@@ -1066,7 +1093,7 @@ const fresh = () => ({
   regs:{},
   read:{ ch:[], last:null, day:'', n:0, cnt:0, list:[], total:0, rounds:0, books:{}, fs:18, orig:false, tst:'' },
   proof:{ study:{ last:'', total:0, wk:{ key:'', days:[] }, wkGot:{} }, work:{ last:'', total:0, wk:{ key:'', days:[] }, wkGot:{} }, log:[], seen:'' },
-  hist:{}, vsub:'read',
+  hist:{}, vsub:'read', plan:null, plansDone:[],
   day:{ date:'', picks:[], sold:0, brew:0, stairs:0, place:0, story:0, verse:0, claimed:{}, gift:false },
   att:{ days:0, last:'' },
   set:{ calm:false, persist:false },
@@ -1145,6 +1172,10 @@ function migrate(d){
   s.proof.log = s.proof.log.filter(e => e && PK[e.k] && typeof e.d === 'string' && typeof e.id === 'string');
   if (!d.hist) (s.verse.wk.days || []).forEach(x => { s.hist[x] = (s.hist[x] || 0) | 2; });   // 옛 저장: 이번 주 암송한 날을 달력에
   if (s.vsub !== 'mem') s.vsub = 'read';
+  /* 7판 내용: 말씀 미션(1독 계획) */
+  if (s.plan && (typeof s.plan !== 'object' || !PLANS[s.plan.id] || typeof s.plan.start !== 'string')) s.plan = null;
+  if (s.plan) { if (!Array.isArray(s.plan.ch)) s.plan.ch = []; s.plan.n = +s.plan.n || 0; if (!s.plan.got || typeof s.plan.got !== 'object') s.plan.got = {}; }
+  if (!Array.isArray(s.plansDone)) s.plansDone = [];
   if (!['cafe','stairs','verse','deco','proof'].includes(s.tab)) s.tab = 'cafe';
   s.v = SAVE_V;
   return s;
@@ -2144,7 +2175,7 @@ function releaseSeat(id){ AG.forEach(a => { if (a.seat === id) { a.wait = 0; exi
      위계: 걸음 < 코인·하트 < 50계단·구역 < 기록·메달. 떨어질 때만 화면 흔들림(연출 줄이기면 끈다).
    - 50계단마다 곧은 계단 6칸(숨 고르기, G-CAS-12 톱니형). 빠르게 25걸음 → 피버 6초(게이지 그대로, 코인 2배).
    - 하트 계단(게이지 +25), 최고 기록 자리에 깃발(U-FEEL-09), 메달 6개(처음 한 번 코인).
-   - 캐릭터는 옷장 카드 그림(SVG)을 그대로 그려 쓴다. 얼굴이 정면이라 바라보는 방향은 화살표로 분명히(U-FEEL-12).
+   - 캐릭터는 옆모습 꼬마 유엘이(바라보는 방향이 그대로 보인다, U-FEEL-12). 카드 그림은 사용자가 '아까가 낫다'고 해서 되돌렸다.
    - 처음 두 판은 방향을 바꿔야 할 때 '방향 전환' 버튼이 반짝인다. */
 const cv = document.getElementById('cv');
 let ctx = cv.getContext('2d');
@@ -2470,46 +2501,11 @@ function drawDeco(h, SX, SY, m){
     ctx.beginPath(); ctx.ellipse(cx, cy, 34 * c.w, 13 * c.w, 0, 0, 7); ctx.ellipse(cx + 22 * c.w, cy - 8 * c.w, 22 * c.w, 13 * c.w, 0, 0, 7); ctx.ellipse(cx - 20 * c.w, cy - 4 * c.w, 18 * c.w, 10 * c.w, 0, 0, 7); ctx.fill();
   });
 }
-/* 캐릭터: 옷장 카드 그림(SVG)을 한 번 그림으로 바꿔 두고 쓴다. 준비 전이나 실패하면 예전 꼬마 그림 */
-const SPR = {};
-function sprite(ex){
-  const o = outfit(), hs = hairNow(), key = o.id + '|' + hs + '|' + ex;
-  const s = SPR[key];
-  if (s) return s.ok ? s.cv : null;
-  const rec = SPR[key] = { ok:false, cv:null };
-  try {
-    /* 카드 그림은 HTML 안에서 그리던 것이라 겹친 속성이 있다 → HTML로 한 번 읽고 XML로 다시 써서 그림 파일로 연다(카드와 똑같이 첫 속성이 남음) */
-    const holder = document.createElement('div');
-    holder.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -40 320 500" width="320" height="500">${ART.figure(o, ex, 'sp' + Object.keys(SPR).length, hs)}</svg>`;
-    const svg = new XMLSerializer().serializeToString(holder.firstElementChild);
-    const img = new Image();
-    img.onload = () => {
-      try { const c = document.createElement('canvas'); c.width = 160; c.height = 250; c.getContext('2d').drawImage(img, 0, 0, 160, 250); rec.cv = c; rec.ok = true; if (G && !G.playing) draw(); } catch(e) {}
-    };
-    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-  } catch(e) {}
-  return null;
-}
+/* 캐릭터: 예전 꼬마 유엘이(옆모습이라 바라보는 방향이 한눈에 보인다 · 사용자 피드백 '아까가 낫다'). 한 걸음마다 콩 뛰기만 더했다 */
 function drawClimber(x, y, SX){
-  const ex = !G.alive ? 'calm' : G.fever > 0 ? 'joy' : 'smile', spr = sprite(ex);
-  const hopY = -Math.sin(Math.min(1, G.hop) * Math.PI) * 9, sqY = 1 - G.sq * .07, sqX = 1 + G.sq * .05;
-  const yy = y + hopY + G.fall, spin = G.alive ? 0 : G.deadT * 9 * G.f;
-  /* 바라보는 방향: 발밑 화살표(정면 그림이라 방향을 분명히 보여 준다) */
-  if (G.alive) {
-    const bob = Math.sin(G.t * 6) * 1.5, ax = x + G.f * (SX * .62 + bob), ay = yy - SX * .55;
-    ctx.save(); ctx.translate(ax, ay); ctx.scale(G.f, 1);
-    ctx.fillStyle = 'rgba(255,255,255,.95)'; ctx.strokeStyle = G.fever > 0 ? '#E0607A' : '#5B3A33'; ctx.lineWidth = 2.4; ctx.lineJoin = 'round';
-    ctx.beginPath(); ctx.moveTo(-6, -8); ctx.lineTo(6, 0); ctx.lineTo(-6, 8); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.restore();
-  }
-  if (G.fever > 0 && !S.set.calm) { ctx.fillStyle = 'rgba(255,230,140,.35)'; ctx.beginPath(); ctx.ellipse(x, yy - SX * .9, SX * .85, SX * 1.05, 0, 0, 7); ctx.fill(); }
-  ctx.fillStyle = 'rgba(53,42,45,.18)'; ctx.beginPath(); ctx.ellipse(x, y + 1, SX * .3, 3.5, 0, 0, 7); ctx.fill();
-  if (spr) {
-    const hgt = SX * 2.05, wid = hgt * 320 / 500;
-    ctx.save(); ctx.translate(x, yy); ctx.rotate(spin + (G.alive ? G.f * .05 : 0)); ctx.scale(G.f * sqX, sqY);
-    ctx.drawImage(spr, -wid / 2, -hgt * .96, wid, hgt);
-    ctx.restore();
-  } else drawYuel(x, yy, G.f, outfit(), spin);
+  const hopY = -Math.sin(Math.min(1, G.hop) * Math.PI) * 7, yy = y + hopY + G.fall, spin = G.alive ? 0 : G.deadT * 9;
+  if (G.fever > 0 && !S.set.calm) { ctx.fillStyle = 'rgba(255,230,140,.4)'; ctx.beginPath(); ctx.ellipse(x, yy - 24, 22, 30, 0, 0, 7); ctx.fill(); }
+  drawYuel(x, yy, G.f, outfit(), spin);
 }
 function draw(){
   if (!G || !W) return;
@@ -3310,7 +3306,7 @@ const setRead = (b, c) => { const s = bits(b); S.read.ch[b] = s.slice(0, c) + '1
 const bookCount = b => { const s = bits(b); let n = 0; for (let i = 0; i < s.length; i++) if (s[i] === '1') n++; return n; };
 const readCount = () => BOOKS.reduce((a, _, b) => a + bookCount(b), 0);
 const rdToday = (b, c) => S.read.day === today() && (S.read.list || []).includes(b + '.' + c);
-const readGain = () => S.read.n < READ_CAP ? READ_R.ch + (S.read.n === 0 ? READ_R.first : 0) : 0;
+const readGain = () => S.read.n < readCap() ? READ_R.ch + (S.read.n === 0 ? READ_R.first : 0) : 0;
 /* 이어 읽을 장: 마지막으로 연 장이 아직이면 그 장, 읽었으면 그다음부터 처음 나오는 안 읽은 장 */
 function nextUnread(){
   const L0 = S.read.last; let b = L0 ? L0.b : 0, c = L0 ? L0.c : 0;
@@ -3333,14 +3329,14 @@ function loadBook(b){
 function renderVerse(){
   const memDot = dueList().length || newOpen();
   return `<div class="seg two vsub"><button class="${S.vsub !== 'mem' ? 'on' : ''}" data-act="vsub" data-id="read">성경 읽기</button><button class="${S.vsub === 'mem' ? 'on' : ''}" data-act="vsub" data-id="mem">말씀 암송${memDot ? '<i class="bd">!</i>' : ''}</button></div>
-    ${weekCardHTML()}${S.vsub === 'mem' ? renderMemo() : renderRead()}`;
+    ${S.vsub === 'mem' ? weekCardHTML() + renderMemo() : renderRead()}`;
 }
 function renderRead(){
   rollRead();
   const R = S.read, nx = nextUnread(), done = readCount(), pct = done / TOTAL_CH * 100, g = readGain();
   const full = BOOKS.filter((bk, b) => bookCount(b) === bk[1]).length, tst = R.tst || (nx.b < 39 ? 'old' : 'new');
   const books = BOOKS.map((bk, b) => [bk, b]).filter(([, b]) => tst === 'old' ? b < 39 : b >= 39);
-  return `<button class="banner verse" data-act="readnext"><span class="bi">${IC.read}</span><div><small>${R.last ? '이어 읽기' : '창세기부터 읽기'}</small><b>${BOOKS[nx.b][0]} ${nx.c + 1}장</b><span>${g ? `다 읽으면 달란트 +${g}` : `오늘 달란트 ${READ_CAP}장 다 받았어요 · 읽기는 계속돼요`}</span></div><span class="go">읽기</span></button>
+  return `${missionHTML()}${weekCardHTML()}${planOn() ? '' : `<button class="banner verse" data-act="readnext"><span class="bi">${IC.read}</span><div><small>${R.last ? '이어 읽기' : '창세기부터 읽기'}</small><b>${BOOKS[nx.b][0]} ${nx.c + 1}장</b><span>${g ? `다 읽으면 달란트 +${g}` : `오늘 달란트 ${readCap()}장 다 받았어요 · 읽기는 계속돼요`}</span></div><span class="go">읽기</span></button>`}
     <div class="today">
       <div class="stat ${R.cnt ? 'ok' : ''}"><b>${R.cnt}장</b><span>오늘 읽은 장</span></div>
       <div class="stat"><b>${pct > 0 && pct < 10 ? pct.toFixed(1) : Math.floor(pct)}%</b><span>통독 ${done.toLocaleString()}/${TOTAL_CH.toLocaleString()}장</span></div>
@@ -3350,7 +3346,7 @@ function renderRead(){
       <div class="seg two"><button class="${tst === 'old' ? 'on' : ''}" data-act="tst" data-id="old">구약 39권</button><button class="${tst === 'new' ? 'on' : ''}" data-act="tst" data-id="new">신약 27권</button></div>
       <div class="books">${books.map(([bk, b]) => { const k = bookCount(b), all = k === bk[1];
         return `<button class="bk${all ? ' done' : ''}${b === nx.b ? ' now' : ''}${bk[0].length >= 6 ? ' long' : ''}" data-act="book" data-b="${b}"><b>${bk[0]}</b><span class="bb"><i style="width:${(k / bk[1] * 100).toFixed(1)}%"></i></span><span class="bn">${all ? '다 읽음 ✓' : `${k} / ${bk[1]}장`}</span></button>`; }).join('')}</div>
-      <p class="note">한 장 +${READ_R.ch}, 하루 첫 장은 +${READ_R.first} 더(하루 ${READ_CAP}장까지). 책 한 권을 다 읽으면 +${READ_R.book}, 성경 전체를 다 읽으면 +${READ_R.all}.</p></section>
+      <p class="note">한 장 +${READ_R.ch}, 하루 첫 장은 +${READ_R.first} 더(하루 ${readCap()}장까지). 책 한 권을 다 읽으면 +${READ_R.book}, 성경 전체를 다 읽으면 +${READ_R.all}.</p></section>
     <p class="note">요즘 잘 쓰지 않는 말은 쉬운 말로 바꿔 보여 줘요(가라사대→이르시되, 저희→그들, 소경→맹인 …). 읽는 화면에서 '원문'을 누르면 개역한글 그대로 볼 수 있어요.</p>`;
 }
 function openChapters(b){
@@ -3433,7 +3429,8 @@ function finishChapter(){
   R.list.push(key); R.cnt++; R.total = (R.total || 0) + 1;
   const first = !isRead(b, c); if (first) setRead(b, c);
   let gain = 0; const notes = [];
-  if (R.n < READ_CAP) { gain += readGain(); R.n++; } else notes.push(`오늘 달란트는 ${READ_CAP}장까지예요 · 기록은 남아요`);
+  if (R.n < readCap()) { gain += readGain(); R.n++; } else notes.push(`오늘 달란트는 ${readCap()}장까지예요 · 기록은 남아요`);
+  const [pg, pn] = planAdd(b, c); gain += pg; notes.push(...pn);
   if (first && bookCount(b) === BOOKS[b][1] && !R.books[b]) { R.books[b] = 1; gain += READ_R.book; notes.push(`${jo(BOOKS[b][0], '을', '를')} 다 읽었어요! +${READ_R.book}`); }
   if (first && readCount() === TOTAL_CH) { R.rounds = (R.rounds || 0) + 1; gain += READ_R.all; notes.push(`성경 ${R.rounds}독을 마쳤어요! +${READ_R.all}`); R.ch = []; R.books = {}; }
   S.talent += gain; RDR.gain = gain; RDR.notes = notes;
@@ -3458,6 +3455,106 @@ function stepReader(dir){
   document.addEventListener('visibilitychange', () => { if (!RDR) return; if (document.hidden) { if (!RDR.hid) RDR.hid = Date.now(); } else if (RDR.hid) { RDR.t0 += Date.now() - RDR.hid; RDR.hid = 0; } });
   document.addEventListener('keydown', e => { if (RDR && e.key === 'Escape') closeReader(); });
 })();
+
+/* ---------- 말씀 미션: 3·5·7개월 1독 계획 ----------
+   하루 분량 = 전체 1,189장을 날짜에 고르게 나눈 것(날마다 누적 목표 = 1189 × (n일째) ÷ 날수, 반올림).
+   읽은 장은 순서와 상관없이 한 번씩 센다(책 고르기로 읽어도 된다). 오늘 미션 = 아직 안 읽은 장을 앞에서부터 남은 만큼.
+   밀려도 벌은 없다: '오늘부터 다시 맞추기'로 끝나는 날을 뒤로 미룰 수 있다. 보상: 하루 분량 +5, 25·50·75% +20, 완주 +100~200. */
+const PLANS = { m3:{ name:'3개월 1독', days:90, bonus:200 }, m5:{ name:'5개월 1독', days:150, bonus:150 }, m7:{ name:'7개월 1독', days:210, bonus:100 } };
+const PLAN_R = { day:5, quarter:20 };
+const daysBetween = (a, b) => Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 864e5);
+const planOn = () => !!(S.plan && !S.plan.done && PLANS[S.plan.id]);
+const perDay = days => { const lo = Math.floor(TOTAL_CH / days), hi = Math.ceil(TOTAL_CH / days); return lo === hi ? `${lo}장` : `${lo}~${hi}장`; };
+const readCap = () => planOn() ? Math.max(READ_CAP, Math.ceil(TOTAL_CH / PLANS[S.plan.id].days * 1.5)) : READ_CAP;
+function pbits(b){ const P = S.plan, n = BOOKS[b][1]; let s = P.ch[b]; if (typeof s !== 'string' || s.length !== n) s = P.ch[b] = String(s || '').replace(/[^01]/g, '0').padEnd(n, '0').slice(0, n); return s; }
+const pRead = (b, c) => pbits(b)[c] === '1';
+function pSet(b, c){ const s = pbits(b); if (s[c] === '1') return false; S.plan.ch[b] = s.slice(0, c) + '1' + s.slice(c + 1); S.plan.n++; return true; }
+const planDays = () => PLANS[S.plan.id].days;
+const planDay = () => Math.max(0, Math.min(planDays() - 1, daysBetween(S.plan.start, today())));
+const planTarget = d => d < 0 ? 0 : Math.min(TOTAL_CH, Math.round(TOTAL_CH * (d + 1) / planDays()));
+const planEnd = () => addDays(S.plan.start, planDays() - 1);
+function planToday(){
+  const d = planDay(), tgt = planTarget(d), prev = planTarget(d - 1), n = S.plan.n;
+  return { d, tgt, quota:tgt - prev, left:Math.max(0, tgt - n), backlog:Math.max(0, prev - n), ahead:Math.max(0, n - tgt), done:n >= tgt };
+}
+function planNext(k){ const out = []; for (let b = 0; b < 66 && out.length < k; b++) { const s = pbits(b); for (let c = 0; c < s.length && out.length < k; c++) if (s[c] !== '1') out.push({ b, c }); } return out; }
+function rangeLabel(list){
+  const seg = [];
+  for (const x of list) { const L = seg[seg.length - 1]; if (L && L.b === x.b && L.c2 === x.c - 1) L.c2 = x.c; else seg.push({ b:x.b, c1:x.c, c2:x.c }); }
+  const s = seg.map(g => `${BOOKS[g.b][0]} ${g.c1 + 1}${g.c2 > g.c1 ? '~' + (g.c2 + 1) : ''}장`);
+  return s.length > 2 ? s.slice(0, 2).join(', ') + ' …' : s.join(', ');
+}
+const ymd = d => { const [y, m, dd] = d.split('-').map(Number); return (y !== new Date().getFullYear() ? `${y}년 ` : '') + `${m}월 ${dd}일`; };
+const ro = w => { const c = w.charCodeAt(w.length - 1) - 0xAC00, j = c >= 0 && c < 11172 ? c % 28 : 0; return w + (j && j !== 8 ? '으로' : '로'); };
+/* 읽기를 마친 장을 계획에 더하고 보상 메모를 돌려준다(finishChapter에서 부른다) */
+function planAdd(b, c){
+  if (!planOn() || !pSet(b, c)) return [0, []];
+  const P = S.plan, t = planToday(), notes = []; let gain = 0;
+  if (t.done && P.dayGot !== today()) { P.dayGot = today(); P.okDays = (P.okDays || 0) + 1; gain += PLAN_R.day; notes.push(`오늘 말씀 미션 완료! +${PLAN_R.day}`); }
+  [25, 50, 75].forEach(q => { if (P.n * 100 >= TOTAL_CH * q && !P.got[q]) { P.got[q] = 1; gain += PLAN_R.quarter; notes.push(`${PLANS[P.id].name} ${q}% 통과! +${PLAN_R.quarter}`); } });
+  if (P.n >= TOTAL_CH) { P.done = today(); const bo = PLANS[P.id].bonus; gain += bo; notes.push(`${PLANS[P.id].name} 완주! +${bo}`); S.plansDone.push({ id:P.id, start:P.start, end:today() }); }
+  return [gain, notes];
+}
+function missionHTML(){
+  if (!S.plan) return `<section class="sec panel mission"><h2 class="ribbon">말씀 미션</h2>
+    <p class="note">성경 1독 계획을 골라 보세요. 하루 분량을 다 읽으면 달란트 +${PLAN_R.day}, 끝까지 읽으면 큰 보너스!</p>
+    <div class="plans">${Object.entries(PLANS).map(([id, p]) => `<button class="plan" data-act="planpick" data-id="${id}"><b>${p.name}</b><span>하루 ${perDay(p.days)}</span><span class="pb"><span class="tal"></span>완주 +${p.bonus}</span></button>`).join('')}</div>
+    ${S.plansDone.length ? `<p class="note">완주한 계획 ${S.plansDone.length}번 · 마지막 ${PLANS[S.plansDone[S.plansDone.length - 1].id].name}(${ymd(S.plansDone[S.plansDone.length - 1].end)})</p>` : ''}</section>`;
+  const P = S.plan, Pn = PLANS[P.id];
+  if (P.done) return `<section class="sec panel mission on"><h2 class="ribbon">말씀 미션</h2>
+    <div class="mdone"><b>${Pn.name} 완주!</b><span>${ymd(P.start)} ~ ${ymd(P.done)} · 미션 완료 ${P.okDays || 0}일</span></div>
+    <button class="btn cta" data-act="planreset">새 계획 고르기</button></section>`;
+  const t = planToday(), next = planNext(Math.max(1, t.left)), pct = P.n / TOTAL_CH * 100;
+  const todayDone = Math.max(0, t.quota - Math.max(0, t.left - t.backlog));
+  const status = t.backlog ? `밀린 장 ${t.backlog}장이 있어요. 천천히 따라와도 괜찮아요.` : t.ahead ? `${t.ahead}장 앞서 있어요.` : t.done ? '계획대로 가고 있어요.' : '';
+  return `<section class="sec panel mission on"><h2 class="ribbon">말씀 미션 · ${Pn.name}</h2>
+    <div class="mtop"><div class="mt"><small>${t.done ? '오늘 미션 완료 ✓' : `오늘 미션 · 남은 ${t.left}장`}</small><b>${t.done ? `내일 ${rangeLabel(planNextAfterToday())}` : rangeLabel(next)}</b></div><span class="mday">${t.d + 1}일째<small>/${Pn.days}일</small></span></div>
+    <div class="mbar"><i style="width:${(t.done ? 100 : todayDone / Math.max(1, t.quota) * 100).toFixed(1)}%"></i><span>${t.done ? `오늘 분량 ${t.quota}장 다 읽었어요` : `오늘 ${todayDone} / ${t.quota}장${t.backlog ? ` + 밀린 ${t.backlog}장` : ''}`}</span></div>
+    ${t.done ? '' : `<button class="btn cta" data-act="planread">미션 읽기 · ${BOOKS[next[0].b][0]} ${next[0].c + 1}장</button>`}
+    <p class="note">${status}${status ? ' ' : ''}전체 ${P.n.toLocaleString()} / ${TOTAL_CH.toLocaleString()}장(${pct > 0 && pct < 10 ? pct.toFixed(1) : Math.floor(pct)}%) · 끝나는 날 ${ymd(planEnd())}</p>
+    <button class="linkbtn" data-act="plansheet">계획 보기 · 바꾸기</button></section>`;
+}
+/* 오늘 분량을 다 읽었으면 내일 읽을 범위를 미리 보여 준다 */
+function planNextAfterToday(){ const d = planDay(), k = Math.max(1, planTarget(d + 1) - S.plan.n); return planNext(Math.min(k, 40)); }
+function openPlanPick(id){
+  const p = PLANS[id], n = readCount();
+  openSheet(`<h3>${p.name}<button class="x" data-act="close">닫기</button></h3>
+    <p>오늘부터 <b>${p.days}일</b> 동안 하루 <b>${perDay(p.days)}</b>씩, 창세기부터 요한계시록까지 읽어요.</p>
+    <p class="note">끝나는 날 ${ymd(addDays(today(), p.days - 1))}</p>
+    ${n ? `<label class="carry"><input type="checkbox" id="planCarry" checked> 이번 통독에서 이미 읽은 ${n.toLocaleString()}장도 넣기</label>` : ''}
+    <div class="rwlist"><span>하루 분량 다 읽기 <b>+${PLAN_R.day}</b></span><span>25% · 50% · 75% <b>+${PLAN_R.quarter}씩</b></span><span>완주 <b>+${p.bonus}</b></span></div>
+    <p class="note">읽은 장은 순서와 상관없이 모두 세요. 밀려도 괜찮아요. 오늘부터 다시 맞출 수 있어요. 계획이 있는 동안에는 하루 ${Math.max(READ_CAP, Math.ceil(TOTAL_CH / p.days * 1.5))}장까지 장마다 달란트를 받아요.</p>
+    <button class="btn cta" data-act="planstart" data-id="${id}">${p.name} 시작하기</button>`);
+}
+function openPlanSheet(sure){
+  if (!planOn()) return;
+  const P = S.plan, Pn = PLANS[P.id], t = planToday();
+  openSheet(`<h3>${Pn.name}<button class="x" data-act="close">닫기</button></h3>
+    <div class="rwlist"><span>시작 <b>${ymd(P.start)}</b></span><span>끝나는 날 <b>${ymd(planEnd())}</b></span><span>${t.d + 1}일째 · 미션 완료 <b>${P.okDays || 0}일</b></span><span>전체 <b>${P.n} / ${TOTAL_CH}장</b></span></div>
+    ${t.backlog ? `<button class="btn line" data-act="planrebase">오늘부터 다시 맞추기</button><p class="note">밀린 ${t.backlog}장을 없던 것으로 하고, 끝나는 날을 그만큼 뒤로 미뤄요. 읽은 장은 그대로예요.</p>` : ''}
+    <div class="row">${Object.entries(PLANS).filter(([id]) => id !== P.id).map(([id, p]) => `<button class="btn line" data-act="planswitch" data-id="${id}">${ro(p.name)} 바꾸기</button>`).join('')}</div>
+    <p class="note">바꾸면 시작한 날과 읽은 장은 그대로 두고 하루 분량만 다시 나눠요.</p>
+    <button class="btn ghost" data-act="planstop" data-sure="${sure ? 1 : 0}">${sure ? '한 번 더 누르면 계획을 그만둬요' : '계획 그만두기'}</button>`);
+}
+const PLAN_ACTS = {
+  planpick:d => openPlanPick(d.id),
+  planstart:d => {
+    const p = PLANS[d.id]; if (!p) return;
+    const carry = document.getElementById('planCarry'), keep = carry && carry.checked;
+    S.plan = { id:d.id, start:today(), ch:keep ? S.read.ch.map(x => typeof x === 'string' ? x : '') : [], n:keep ? readCount() : 0, dayGot:'', got:{}, done:'', okDays:0 };
+    save(); closeSheet(); toast(`${p.name}을 시작했어요! 오늘은 ${perDay(p.days)}`);
+  },
+  planread:() => { if (!planOn()) return; const n = planNext(1)[0]; if (n) openReader(n.b, n.c); },
+  plansheet:() => openPlanSheet(false),
+  planrebase:() => {
+    if (!planOn()) return;
+    const P = S.plan, d0 = Math.floor(P.n * planDays() / TOTAL_CH);   // 어제까지의 목표가 읽은 장을 넘지 않게 시작일을 미룬다
+    P.start = addDays(today(), -d0); save(); closeSheet(); toast(`끝나는 날을 ${ymd(planEnd())}로 다시 맞췄어요`);
+  },
+  planswitch:d => { if (!planOn() || !PLANS[d.id]) return; S.plan.id = d.id; save(); closeSheet(); toast(`${ro(PLANS[d.id].name)} 바꿨어요 · 하루 ${perDay(PLANS[d.id].days)}`); },
+  planstop:d => { if (d.sure !== '1') { openPlanSheet(true); return; } S.plan = null; save(); closeSheet(); toast('계획을 그만뒀어요. 언제든 다시 고를 수 있어요'); },
+  planreset:() => { S.plan = null; save(); renderAll(); }
+};
 
 /* ---------- 인증 사진: 이 기기 안(IndexedDB)에만 ---------- */
 const PHOTO = (() => {
@@ -3612,7 +3709,8 @@ function openTalent(need){
     ${need ? `<p>달란트 ${need}개가 필요해요. 지금 ${S.talent}개 있어요.</p>` : ''}
     <p class="note">달란트는 돈 대신 쓰는 보석이에요. 사지 않고, 말씀과 좋은 습관으로만 모여요.</p>
     <div class="list">
-      ${row(IC.read, '성경 읽기', `한 장 +${READ_R.ch} · 하루 첫 장 +${READ_R.first} 더 · 한 권 다 읽으면 +${READ_R.book}`, `${Math.min(R.n, READ_CAP)}/${READ_CAP}장`, 'read', R.n > 0)}
+      ${row(IC.read, '성경 읽기', `한 장 +${READ_R.ch} · 하루 첫 장 +${READ_R.first} 더 · 한 권 다 읽으면 +${READ_R.book}`, `${Math.min(R.n, readCap())}/${readCap()}장`, 'read', R.n > 0)}
+      ${row(IC.read, '말씀 미션(1독 계획)', planOn() ? `${PLANS[S.plan.id].name} · 하루 분량 +${PLAN_R.day} · 25·50·75% +${PLAN_R.quarter} · 완주 +${PLANS[S.plan.id].bonus}` : `3·5·7개월 1독 중 골라요 · 하루 분량 +${PLAN_R.day} · 완주 +100~200`, planOn() ? (planToday().done ? '오늘 ✓' : `남은 ${planToday().left}`) : '고르기', 'read', planOn() && planToday().done)}
       ${row(IC.mem, '말씀 암송', `새 말씀 +${REWARD.learn} · 복습 하나 +${REWARD.review} · 다 마치면 연속 보너스`, memLeft ? `남은 ${memLeft}` : '오늘 ✓', 'mem', !memLeft)}
       ${row(IC.study, '오공완 사진 인증', `공부한 날 한 번 +${PROOF_R.day} · 이번 주 ${PK.study.goal}번이면 +${PROOF_R.week}`, ps('study'), 'proof', S.proof.study.last === d)}
       ${row(IC.work, '오운완 사진 인증', `운동한 날 한 번 +${PROOF_R.day} · 이번 주 ${PK.work.goal}번이면 +${PROOF_R.week}`, ps('work'), 'proof', S.proof.work.last === d)}
@@ -3652,6 +3750,7 @@ const ACT9 = {
   calmon:d => { const now = new Date(), c = CALM || [now.getFullYear(), now.getMonth()], x = new Date(c[0], c[1] + (+d.v), 1); CALM = [x.getFullYear(), x.getMonth()]; renderAll(); },
   calday:d => openDay(d.d)
 };
+Object.assign(ACT9, PLAN_ACTS);
 $id('photoIn').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; if (f) proofFile(f); });
 document.addEventListener('input', e => { if (e.target && e.target.id === 'phMemo' && PH) PH.memo = e.target.value.slice(0, 40); });
 
@@ -3740,7 +3839,7 @@ function renderHud(){
 const renderHudSoft = () => renderHud();
 const cafeBadge = () => (S.day.picks || []).some(m => missionDone(m) && !S.day.claimed[m.id]) || REGULARS.some(storyReady);
 function renderTabs(){
-  const vb = dueList().length || newOpen(), cb = cafeBadge(), db = FURN.some(f => (S.room.inv[f.id] || 0) > 0);
+  const vb = dueList().length || newOpen() || (planOn() && !planToday().done), cb = cafeBadge(), db = FURN.some(f => (S.room.inv[f.id] || 0) > 0);
   const pb = S.proof.seen !== today() && (S.proof.study.last !== today() || S.proof.work.last !== today());   // 하루 한 번만: 인증 탭을 열면 사라진다
   softSet('tabs', [['cafe','카페'],['deco','꾸미기'],['verse','말씀'],['proof','인증'],['stairs','계단']].map(([id, n]) =>
     `<button class="${S.tab === id ? 'on' : ''}" data-act="tab" data-id="${id}" aria-current="${S.tab === id ? 'page' : 'false'}"><span class="ti">${IC[id]}</span><span class="tl">${n}</span>${S.tab !== id && ((id === 'verse' && vb) || (id === 'cafe' && cb) || (id === 'deco' && db) || (id === 'proof' && pb)) ? '<span class="bd">!</span>' : ''}</button>`).join(''));
@@ -3779,12 +3878,13 @@ function nextHint(){
   if (inv) return { t:'창고에 가구가 있어요', s:`${jo(inv.name, '을', '를')} 카페에 놓아 보세요`, go:'꾸미기', act:'tab', id:'deco' };
   if (ei >= 0) return { t:'빈 제조기가 있어요', s:'커피를 더 만들어 둘까요?', go:'만들기', act:'slot', i:ei };
   rollRead();
-  if (!S.read.cnt) { const n = nextUnread(); return { cls:'verse', t:'오늘의 성경 읽기', s:`${BOOKS[n.b][0]} ${n.c + 1}장 · 달란트 +${readGain()}`, go:'읽기', act:'readnext' }; }
+  if (planOn()) { const t = planToday(); if (!t.done) { const nx = planNext(t.left); return { cls:'verse', t:'오늘의 말씀 미션', s:`${rangeLabel(nx)} · 남은 ${t.left}장`, go:'읽기', act:'planread' }; } }
+  else if (!S.read.cnt) { const n = nextUnread(); return { cls:'verse', t:'오늘의 성경 읽기', s:`${BOOKS[n.b][0]} ${n.c + 1}장 · 달란트 +${readGain()}`, go:'읽기', act:'readnext' }; }
   return null;
 }
 function hintHTML(){
   const h = nextHint(); if (!h) return `<div class="banner calm"><span class="bi">${IC.cafe}</span><div><b>카페가 잘 돌아가고 있어요</b><span>지나가는 손님을 눌러 가게로 불러 봐요</span></div></div>`;
-  const ic = h.act === 'readnext' ? IC.read : h.act === 'goverse' ? IC.verse : h.act === 'tab' && h.id === 'deco' ? IC.deco : h.act === 'reg' ? IC.regs : h.act === 'claim' ? IC.goal : IC.cafe;
+  const ic = h.act === 'readnext' || h.act === 'planread' ? IC.read : h.act === 'goverse' ? IC.verse : h.act === 'tab' && h.id === 'deco' ? IC.deco : h.act === 'reg' ? IC.regs : h.act === 'claim' ? IC.goal : IC.cafe;
   return `<button class="banner ${h.cls || ''}" data-act="${h.act}"${h.id ? ` data-id="${h.id}"` : ''}${h.i != null ? ` data-i="${h.i}"` : ''}><span class="bi">${ic}</span><div><small>지금 할 일</small><b>${esc(h.t)}</b><span>${esc(h.s)}</span></div><span class="go">${h.go}</span></button>`;
 }
 function slotHTML(s, i){

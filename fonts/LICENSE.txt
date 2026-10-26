@@ -1,0 +1,8 @@
+이 폴더의 글꼴은 앱 안 읽기 화면(설교 전문·해설)에서만 쓰며, 앱에서 쓰는 글자만 추려(subset) 담았습니다.
+
+1) maruburi-r.woff, maruburi-sb.woff — 마루 부리(MaruBuri) Regular·SemiBold
+   © NAVER Corporation. 네이버 마루 부리 글꼴 라이선스에 따라 누구나 무료로 쓸 수 있으며, 글꼴 자체를 판매하지 않는 한 배포·수정이 허용됩니다.
+   (네이버 글꼴: https://hangeul.naver.com)
+
+2) donghwa.woff(동화또박), kkot.woff(꽃내음), dahaeng.woff(다행체), seongsil.woff(성실체), mirae.woff(미래나무) — 나눔손글씨(클로바 나눔손글씨)
+   © NAVER Corporation. SIL Open Font License 1.1 에 따라 배포됩니다.

@@ -3347,7 +3347,7 @@ function renderRead(){
       <div class="books">${books.map(([bk, b]) => { const k = bookCount(b), all = k === bk[1];
         return `<button class="bk${all ? ' done' : ''}${b === nx.b ? ' now' : ''}${bk[0].length >= 6 ? ' long' : ''}" data-act="book" data-b="${b}"><b>${bk[0]}</b><span class="bb"><i style="width:${(k / bk[1] * 100).toFixed(1)}%"></i></span><span class="bn">${all ? '다 읽음 ✓' : `${k} / ${bk[1]}장`}</span></button>`; }).join('')}</div>
       <p class="note">한 장 +${READ_R.ch}, 하루 첫 장은 +${READ_R.first} 더(하루 ${readCap()}장까지). 책 한 권을 다 읽으면 +${READ_R.book}, 성경 전체를 다 읽으면 +${READ_R.all}.</p></section>
-    <p class="note">요즘 잘 쓰지 않는 말은 쉬운 말로 바꿔 보여 줘요(가라사대→이르시되, 저희→그들, 소경→맹인 …). 읽는 화면에서 '원문'을 누르면 개역한글 그대로 볼 수 있어요.</p>`;
+    <p class="note">본문은 원어 뜻을 지키면서 20대 말투로 다시 쓴 판이 기본이에요. 읽는 화면 위에서 쉬운 말 개역한글·원문으로 바꿀 수 있고, 밑줄 친 인물·지명·어려운 말을 누르면 뜻이, 절 번호를 누르면 원어 메모가 떠요. Aa 버튼으로 글꼴·크기·바탕을 바꿔요.</p>`;
 }
 function openChapters(b){
   const n = BOOKS[b][1], nx = nextUnread();
@@ -4422,5 +4422,7 @@ window.claude?.hot?.snapshot?.(() => ({ S }));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
 
 </script>
+<link rel="stylesheet" href="bible_mz.css?v=y1">
+<script src="bible_mz.js?v=y1"></script>
 </body>
 </html>

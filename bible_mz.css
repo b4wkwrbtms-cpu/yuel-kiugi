@@ -1,0 +1,151 @@
+/* 유엘이키우기 · 성경 읽기 확장 (10-27) — 20대 말투 본문 · 낱말 밑줄 · 뜻 카드 · 읽기 모양. 읽기 창(#reader) 안에서만 쓰는 변수 */
+@font-face { font-family: "MaruBuri"; font-weight: 400; font-display: swap; src: url(fonts/maruburi-r.woff) format("woff"); }
+@font-face { font-family: "MaruBuri"; font-weight: 600 700; font-display: swap; src: url(fonts/maruburi-sb.woff) format("woff"); }
+@font-face { font-family: "NSDonghwa"; font-display: swap; src: url(fonts/donghwa.woff) format("woff"); }
+@font-face { font-family: "NSKkot"; font-display: swap; src: url(fonts/kkot.woff) format("woff"); }
+@font-face { font-family: "NSDahaeng"; font-display: swap; src: url(fonts/dahaeng.woff) format("woff"); }
+@font-face { font-family: "NSSeongsil"; font-display: swap; src: url(fonts/seongsil.woff) format("woff"); }
+@font-face { font-family: "NSMirae"; font-display: swap; src: url(fonts/mirae.woff) format("woff"); }
+
+.reader, .rd-sheet { --rfg: #2d2b28; --rmut: #76706a; --rbg: #FFFBF3; --rline: #e9dfcf; --rq: #8a6b25; --rqbg: rgba(138, 107, 37, .07); --rbtn: #f3ede1; --rhi: #1f1d1a; --rtop: #f6f0e4; --rp: #2b5aa6; --rpl: #1f7a4d; --rh: #6a3fb5; --rc: #a0561a; }
+.reader.paper, .rd-sheet.paper { --rfg: #2b2926; --rmut: #716b62; --rbg: #f4eee3; --rline: #ddd4c4; --rq: #7f601c; --rqbg: rgba(127, 96, 28, .07); --rbtn: #ebe4d6; --rhi: #1d1b18; --rtop: #ece5d8; }
+.reader.dark, .rd-sheet.dark { --rfg: #d8d5cc; --rmut: #8c9099; --rbg: #15171d; --rline: #262a33; --rq: #d8b86a; --rqbg: rgba(216, 184, 106, .07); --rbtn: #1d2027; --rhi: #e9e6de; --rtop: #171a21; --rp: #a9cdff; --rpl: #9be8b9; --rh: #d5bcff; --rc: #ecc390; }
+.reader.night, .rd-sheet.night { --rfg: #c9c6bf; --rmut: #7d8088; --rbg: #000; --rline: #1c1e24; --rq: #c9ab62; --rqbg: rgba(201, 171, 98, .08); --rbtn: #121317; --rhi: #e2dfd7; --rtop: #070708; --rp: #a9cdff; --rpl: #9be8b9; --rh: #d5bcff; --rc: #ecc390; }
+
+/* 종이 결 */
+.reader.grain::before, .rd-sheet.grain .rd-sh-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 5; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.45 0 0 0 0 0.35 0 0 0 0.9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); background-size: 180px 180px; opacity: .5; mix-blend-mode: multiply; }
+.reader.grain.dark::before, .reader.grain.night::before, .rd-sheet.grain.dark .rd-sh-card::before, .rd-sheet.grain.night .rd-sh-card::before { opacity: .05; mix-blend-mode: soft-light; }
+
+/* 읽기 창 틀 */
+.reader { background: var(--rbg); color: var(--rfg); }
+.reader.dark .rdhead, .reader.night .rdhead { background: var(--rtop); border-bottom-color: var(--rline); }
+.reader.dark .rdb, .reader.night .rdb { background: var(--rbtn); color: var(--rfg); border-color: var(--rline); box-shadow: none; }
+.reader.dark .rdt b, .reader.night .rdt b, .reader.dark .rdt span, .reader.night .rdt span { color: var(--rhi); }
+.reader.dark .rdfoot, .reader.night .rdfoot { background: var(--rtop); border-top-color: var(--rline); color: var(--rmut); }
+.reader.dark .rdfoot .btn.line, .reader.night .rdfoot .btn.line { background: var(--rbtn); color: var(--rfg); border-color: var(--rline); }
+.reader .rdhead #rdOrig, .reader .rdhead [data-act="rdfs"] { display: none; }
+.reader .rdhead .rd-aa { font-family: "MaruBuri", serif; font-weight: 600; font-size: 15px; }
+.reader .rd-sh-opts { margin: 8px 12px 0; flex: none; max-height: 52vh; overflow-y: auto; }
+
+/* 본문 */
+.reader .rdbody { font-family: "MaruBuri", "Gowun Batang", "Apple SD Gothic Neo", serif; font-size: var(--rdfs, 18px); line-height: 1.9; color: var(--rfg); padding: 14px 20px 36px; max-width: 640px; text-align: left; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; letter-spacing: 0; }
+.reader.f-sans .rdbody { font-family: "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", "Noto Sans KR", sans-serif; line-height: 1.8; letter-spacing: -.01em; }
+.reader.f-batang .rdbody { font-family: "Gowun Batang", "MaruBuri", serif; font-size: calc(var(--rdfs, 18px) * 1.04); }
+.reader.f-dodum .rdbody { font-family: "Gowun Dodum", "Apple SD Gothic Neo", sans-serif; font-size: calc(var(--rdfs, 18px) * 1.03); line-height: 1.85; }
+.reader.f-donghwa .rdbody { font-family: "NSDonghwa", "Gowun Dodum", sans-serif; font-size: calc(var(--rdfs, 18px) * 1.1); line-height: 1.8; }
+.reader.f-kkot .rdbody { font-family: "NSKkot", "Gowun Dodum", sans-serif; font-size: calc(var(--rdfs, 18px) * 1.1); line-height: 1.8; }
+.reader.f-dahaeng .rdbody { font-family: "NSDahaeng", "Gowun Dodum", sans-serif; font-size: calc(var(--rdfs, 18px) * 1.12); line-height: 1.8; }
+.reader.f-seongsil .rdbody { font-family: "NSSeongsil", "Gowun Dodum", sans-serif; font-size: calc(var(--rdfs, 18px) * 1.06); line-height: 1.8; }
+.reader.f-mirae .rdbody { font-family: "NSMirae", "Gowun Dodum", sans-serif; font-size: calc(var(--rdfs, 18px) * 1.06); line-height: 1.8; }
+.reader.wide .rdbody { line-height: 2.2; } .reader.tight .rdbody { line-height: 1.68; }
+.reader .rdbody p.mz, .reader .rdbody p.kv { margin: 0 0 1em; word-break: keep-all; overflow-wrap: anywhere; }
+.reader .rdbody p.mz .ln { display: block; margin: 0 0 .18em; }
+.reader .rdbody p.mz .ln:last-child { margin-bottom: 0; }
+.reader .rdbody p.mz .ln.sup-t { font-size: .8em; color: var(--rmut); letter-spacing: .02em; }
+.reader.wide .rdbody p.mz { margin-bottom: 1.3em; } .reader.wide .rdbody p.mz .ln { margin-bottom: .35em; }
+.reader.tight .rdbody p.mz { margin-bottom: .7em; } .reader.tight .rdbody p.mz .ln { margin-bottom: .08em; }
+.reader .rdbody sup { font-family: inherit; font-size: .58em; font-weight: 600; color: var(--rmut); margin-right: 4px; vertical-align: .5em; }
+.reader .rdbody sup.vn-t { cursor: pointer; padding: 0 2px; border-radius: 4px; }
+.reader .rdbody sup.vn-t.has { color: var(--rh); } .reader .rdbody sup.vn-t.has::after { content: "·"; margin-left: 1px; }
+.reader .rdbody h4.rd-h { display: block; font-family: inherit; font-weight: 600; font-size: 1.04em; line-height: 1.5; color: var(--rq); margin: 1.9em 0 .6em; }
+.reader .rdbody h4.rd-h::before { content: ""; display: block; width: 28px; height: 2px; background: var(--rq); margin: 0 0 .5em; opacity: .7; }
+.reader .rdbody h4.rd-h:first-of-type { margin-top: .6em; }
+.reader .rdbody u.lin { color: #c43b4b; text-decoration: underline; text-decoration-color: #e0505f; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.reader.dark .rdbody u.lin, .reader.night .rdbody u.lin { color: #ff8a93; text-decoration-color: #ff3b4e; }
+.reader .rdbody a.nl { color: inherit; text-decoration: underline dotted; text-decoration-color: #a89c86; text-decoration-thickness: 1.5px; text-underline-offset: 4px; cursor: pointer; }
+.reader .rdbody.rd-col a.nl.k-person { color: var(--rp); text-decoration-color: var(--rp); }
+.reader .rdbody.rd-col a.nl.k-place { color: var(--rpl); text-decoration-color: var(--rpl); }
+.reader .rdbody.rd-col a.nl.k-hebrew { color: var(--rh); text-decoration-color: var(--rh); }
+.reader .rdbody.rd-col a.nl.k-culture { color: var(--rc); text-decoration-color: var(--rc); }
+.reader .rdbody a.nl.lin { color: #c43b4b; text-decoration: underline solid; text-decoration-color: #e0505f; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.reader .rdbody .sp-lab { display: block; font-size: .7em; line-height: 1.35; color: var(--rmut); margin: .7em 0 .15em; letter-spacing: .01em; }
+.reader .rdbody .sp-lab b { color: var(--rq); font-weight: 700; }
+.reader .rdbody .sp-lab .sp-ar { margin: 0 5px; opacity: .65; }
+.reader .rdbody .sp-lab i { font-style: normal; font-size: .92em; border: 1px solid var(--rline); border-radius: 6px; padding: 0 5px; margin-left: 5px; }
+.reader .rdbody p.mz .sp-lab:first-child { margin-top: 0; }
+.reader .rdbody .rdmsg { color: var(--rmut); }
+.reader .rdbody .rd-note { font-family: var(--f-body); font-size: 13px; line-height: 1.5; color: var(--rmut); margin: 0 0 12px; }
+/* 번역 고르기 · 보기 설정 */
+.reader .rd-ver { display: flex; gap: 6px; margin: -4px 0 14px; position: sticky; top: -14px; z-index: 2; padding: 6px 0; background: var(--rbg); font-family: var(--f-body); }
+.reader .rd-ver button { flex: 1; font: inherit; font-size: 13px; line-height: 1.2; padding: 8px 0; border-radius: 10px; border: 1px solid var(--rline); background: transparent; color: var(--rmut); min-height: 38px; }
+.reader .rd-ver button.on { background: var(--rq); border-color: var(--rq); color: #fff; font-weight: 700; }
+.reader .rd-ver .rd-opbtn { flex: 0 0 auto; padding: 8px 14px; }
+.reader .rd-ver .rd-opbtn.on { border-color: var(--rq); color: var(--rq); background: transparent; }
+.reader .rd-ops { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 16px; font-family: var(--f-body); }
+.reader .rd-op { text-align: left; font: inherit; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--rline); background: var(--rbtn); color: var(--rmut); line-height: 1.3; cursor: pointer; }
+.reader .rd-op b { display: block; font-size: 14px; color: var(--rfg); font-weight: 700; }
+.reader .rd-op small { display: block; font-size: 11.5px; margin-top: 2px; }
+.reader .rd-op.on { border-color: var(--rq); background: var(--rqbg); }
+.reader .rd-op.on b::after { content: " ✓"; color: var(--rq); }
+.reader .rd-legend { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 2px 0 0; font-size: 12.5px; line-height: 1.4; }
+.reader .rd-legend span::before { content: "●"; margin-right: 3px; }
+.reader .rd-legend .k-person { color: var(--rp); } .reader .rd-legend .k-place { color: var(--rpl); } .reader .rd-legend .k-hebrew { color: var(--rh); } .reader .rd-legend .k-culture { color: var(--rc); } .reader .rd-legend .lg-lin { color: #c43b4b; }
+.reader .rd-cx { border: 1px solid var(--rline); border-left: 3px solid var(--rq); border-radius: 10px; padding: 10px 12px; margin: 0 0 18px; background: var(--rbtn); font-family: var(--f-body); font-size: 14px; line-height: 1.6; }
+.reader .rd-cx small { display: block; font-size: 11.5px; color: var(--rmut); }
+.reader .rd-cx b { display: block; font-size: 16.5px; margin: 1px 0 4px; color: var(--rfg); }
+.reader .rd-cx p { margin: 0; color: var(--rfg); } .reader .rd-cx p + p { margin-top: 4px; }
+/* 접기 */
+.reader .rd-fold { border: 1px dashed var(--rline); border-radius: 12px; padding: 12px; margin: 6px 0 18px; background: var(--rbtn); font-family: var(--f-body); font-size: 14px; line-height: 1.6; }
+.reader .rd-fold-top { display: flex; justify-content: space-between; font-size: 12px; color: var(--rmut); }
+.reader .rd-fold-cat { color: var(--rq); }
+.reader .rd-fold-t { display: block; font-size: 16px; margin: 3px 0 6px; color: var(--rfg); }
+.reader .rd-fold-l p { margin: 0 0 4px; color: var(--rfg); }
+.reader .rd-fold-l b { font-size: 11.5px; color: var(--rmut); margin-right: 6px; font-weight: 700; }
+.reader .rd-fold-note { display: block; font-size: 11.5px; color: var(--rmut); margin: 6px 0 10px; }
+.reader .rd-fold-btn { width: 100%; }
+.reader .rd-fold-close { display: block; width: 100%; font: inherit; font-family: var(--f-body); font-size: 12.5px; color: var(--rmut); background: transparent; border: 1px dashed var(--rline); border-radius: 10px; padding: 6px 8px; margin: 4px 0 12px; cursor: pointer; }
+/* 아래 창 */
+.rd-sheet { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; justify-content: flex-end; }
+.rd-sheet[hidden] { display: none !important; }
+.rd-sh-bg { position: absolute; inset: 0; background: rgba(40, 30, 20, .45); }
+.rd-sh-card { position: relative; max-height: 90vh; max-height: 90dvh; display: flex; flex-direction: column; background: var(--rbg); color: var(--rfg); border-top: 1px solid var(--rline); border-radius: 18px 18px 0 0; padding: 0 0 calc(10px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -12px 32px rgba(0, 0, 0, .25); overflow: hidden; }
+.rd-sh-top { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 4px 8px 2px 4px; font-family: var(--f-body); }
+.rd-sh-top button { font: inherit; font-size: 15px; line-height: 1; min-height: 40px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent; color: var(--rmut); cursor: pointer; }
+.rd-sh-top .rd-sh-x { font-size: 16px; }
+.rd-sh-top .rd-sh-aa { font-family: "MaruBuri", serif; font-weight: 600; border: 1px solid var(--rline); min-width: 46px; }
+.rd-sh-tt { flex: 1; min-width: 0; text-align: center; font-size: 13px; line-height: 1.25; color: var(--rmut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rd-sh-opts { margin: 6px 12px 4px; padding: 6px 12px; border: 1px solid var(--rline); border-radius: 12px; background: var(--rbtn); font-family: var(--f-body); }
+.rd-sh-or { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; font-size: 14px; color: var(--rmut); }
+.rd-sh-or + .rd-sh-or { border-top: 1px solid var(--rline); }
+.rd-sh-seg { display: flex; align-items: center; gap: 4px; }
+.rd-sh-seg button { font: inherit; font-size: 14px; line-height: 1; min-height: 36px; min-width: 52px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--rline); background: transparent; color: var(--rmut); cursor: pointer; }
+.rd-sh-seg button.on { background: var(--rq); border-color: var(--rq); color: #fff; font-weight: 700; }
+.rd-sh-seg b { min-width: 30px; text-align: center; color: var(--rfg); font-size: 15px; }
+.rd-sh-fonts { flex-wrap: wrap; justify-content: flex-end; max-width: 72%; }
+.rd-sh-fonts button { min-width: 0; padding: 0 10px; font-size: 15px; }
+.rd-sh-or:has(.rd-sh-fonts) { align-items: flex-start; padding: 8px 0; } .rd-sh-or:has(.rd-sh-fonts) > span { padding-top: 10px; }
+.rd-sh-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; font-family: "MaruBuri", "Gowun Batang", serif; font-size: var(--shfs, 17px); line-height: 1.9; color: var(--rfg); padding: 6px 20px 24px; max-width: 640px; width: 100%; margin: 0 auto; word-break: keep-all; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; }
+.rd-sheet.f-sans .rd-sh-body { font-family: "Apple SD Gothic Neo", sans-serif; line-height: 1.8; }
+.rd-sheet.f-batang .rd-sh-body { font-family: "Gowun Batang", serif; font-size: calc(var(--shfs, 17px) * 1.04); }
+.rd-sheet.f-dodum .rd-sh-body { font-family: "Gowun Dodum", sans-serif; font-size: calc(var(--shfs, 17px) * 1.03); }
+.rd-sheet.f-donghwa .rd-sh-body { font-family: "NSDonghwa", sans-serif; font-size: calc(var(--shfs, 17px) * 1.1); }
+.rd-sheet.f-kkot .rd-sh-body { font-family: "NSKkot", sans-serif; font-size: calc(var(--shfs, 17px) * 1.1); }
+.rd-sheet.f-dahaeng .rd-sh-body { font-family: "NSDahaeng", sans-serif; font-size: calc(var(--shfs, 17px) * 1.12); }
+.rd-sheet.f-seongsil .rd-sh-body { font-family: "NSSeongsil", sans-serif; font-size: calc(var(--shfs, 17px) * 1.06); }
+.rd-sheet.f-mirae .rd-sh-body { font-family: "NSMirae", sans-serif; font-size: calc(var(--shfs, 17px) * 1.06); }
+.rd-sheet.wide .rd-sh-body { line-height: 2.15; } .rd-sheet.tight .rd-sh-body { line-height: 1.7; }
+.rd-sh-body h3 { font-family: inherit; font-weight: 600; font-size: 1.3em; line-height: 1.4; margin: 8px 0 4px; color: var(--rhi); }
+.rd-sh-body h4 { font-family: inherit; font-weight: 600; font-size: 1.04em; margin: 1.6em 0 .5em; color: var(--rq); }
+.rd-sh-body p { margin: 0 0 .9em; }
+.rd-sh-body .rdmsg { font-family: var(--f-body); color: var(--rmut); text-align: center; margin: 24px 0; }
+.rd-sh-back { margin: 6px 16px 0; width: auto; }
+.rd-sh-prev { margin: 0 0 10px; font-size: 13.5px; padding: 6px 12px; width: auto; align-self: flex-start; }
+.nt-head { display: flex; align-items: center; gap: 8px; font-family: var(--f-body); font-size: 12.5px; color: var(--rmut); }
+.nt-badge { font-size: 12px; border-radius: 6px; padding: 1px 7px; border: 1px solid var(--rline); color: var(--rfg); }
+.nt-badge.k-person { border-color: var(--rp); color: var(--rp); } .nt-badge.k-place { border-color: var(--rpl); color: var(--rpl); } .nt-badge.k-hebrew { border-color: var(--rh); color: var(--rh); } .nt-badge.k-culture { border-color: var(--rc); color: var(--rc); }
+.nt-brief { font-size: 1em; color: var(--rhi); }
+.tms { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 10px; }
+.tm { display: flex; align-items: center; gap: 12px; background: var(--rbtn); border: 1px solid var(--rline); border-radius: 10px; padding: 8px 12px; }
+.tm bdi { font-family: "SBL Hebrew", "Ezra SIL", "Noto Serif Hebrew", "Times New Roman", serif; font-size: 22px; line-height: 1.3; color: var(--rfg); flex-shrink: 0; }
+.tm small { display: flex; flex-direction: column; font-family: var(--f-body); font-size: 13px; line-height: 1.35; color: var(--rmut); min-width: 0; }
+.tm small b { color: var(--rfg); font-size: 14px; }
+.nt-form { font-family: var(--f-body); font-size: 13px; color: var(--rq); }
+.nt-cap { font-family: var(--f-body); font-size: 12.5px; color: var(--rmut); line-height: 1.6; }
+.nt-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.nt-chip { font: inherit; font-family: var(--f-body); font-size: 13px; line-height: 1.2; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--rline); background: var(--rbtn); color: var(--rfg); cursor: pointer; }
+.nt-chip::before { content: "●"; font-size: 9px; margin-right: 5px; vertical-align: 2px; }
+.nt-chip.k-person::before { color: var(--rp); } .nt-chip.k-place::before { color: var(--rpl); } .nt-chip.k-hebrew::before { color: var(--rh); } .nt-chip.k-culture::before { color: var(--rc); }
+.he-verse { font-family: "SBL Hebrew", "Ezra SIL", "Noto Serif Hebrew", "Times New Roman", serif; font-size: 24px; line-height: 1.9; margin: 10px 0 4px; color: var(--rfg); }
+.vm { border-top: 1px dashed var(--rline); padding-top: 8px; margin-top: 8px; }
+.vref { font: inherit; color: var(--rq); background: none; border: 0; padding: 0; margin: 0; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; cursor: pointer; white-space: nowrap; }
+.rf-v { font-size: .95em; line-height: 1.8; } .rf-v sup { color: var(--rmut); font-size: .7em; margin-right: 2px; }

@@ -4,7 +4,7 @@
    · 읽기 모양(글꼴 9종·크기·바탕 4종·종이 결·줄 간격). 긴 해설(본문 해설·더 깊이 읽기)과 설교 자료는 넣지 않음(사용자 결정).
    유엘이키우기의 읽기 보상(끝까지 읽고 시간 차면 체크·달란트)은 그대로. 이 파일은 index.html 본문 스크립트 뒤에 붙어 renderReader·openReader·rdEndHTML을 덮어씀. */
 (function () {
-  const MZ_VER = "y2";
+  const MZ_VER = "y3";
   const $ = id => document.getElementById(id);
   const bibleMz = new Map(), bibleX = new Map(), bibleNt = new Map(), bibleHe = new Map();
   let bibleLin = null, bibleLinP = null, XB = null;

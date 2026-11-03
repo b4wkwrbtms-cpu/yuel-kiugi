@@ -149,3 +149,36 @@
 .vm { border-top: 1px dashed var(--rline); padding-top: 8px; margin-top: 8px; }
 .vref { font: inherit; color: var(--rq); background: none; border: 0; padding: 0; margin: 0; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; cursor: pointer; white-space: nowrap; }
 .rf-v { font-size: .95em; line-height: 1.8; } .rf-v sup { color: var(--rmut); font-size: .7em; margin-right: 2px; }
+/* ===== 11-04 해설 본문 · 설교 (곽준영키우기 리뉴얼판) ===== */
+.nt-bl { border-top: 1px solid var(--rline); padding: 8px 0 2px; margin-top: 8px; }
+.nt-bl > summary { cursor: pointer; font-weight: 700; color: var(--rhi); padding: 2px 0 6px; list-style-position: inside; }
+.nt-bl h4 { margin: .8em 0 .3em; }
+.nt-src, .nt-srcs { font-size: 12.5px; color: var(--rmut); }
+.nt-src a, .nt-srcs a { color: var(--rh); }
+.nt-srcs { margin: 0; padding-left: 18px; line-height: 1.6; }
+.nt-badge.k-sm, .nt-chip.k-sm { border-color: #c99a3c; }
+.nt-chip.k-sm::before { color: #d4a23f; }
+.sm-dim { color: var(--rmut); font-size: .85em; }
+.sm-full { width: 100%; margin: 6px 0 10px; }
+.sm-m .nt-chip { margin-bottom: 4px; }
+.sm-q { font-size: .88em; color: var(--rmut); border-left: 2px solid #d4a23f; padding-left: 10px; }
+.sm-t { font-size: 1.25em; line-height: 1.45; margin: .2em 0 .3em; }
+.sm-meta { font-size: .78em; margin: 0 0 1.6em; line-height: 1.6; color: var(--rmut); }
+.sm-p { margin: 0 0 1.15em; }
+.sm-qb { margin: .4em 0 1.3em; padding: .55em .95em; border-left: 3px solid var(--rq); background: var(--rqbg); border-radius: 0 10px 10px 0; font-size: .93em; line-height: 1.85; color: var(--rfg); }
+.sm-pre { white-space: pre; overflow-x: auto; font-size: .7em; line-height: 1.5; color: var(--rmut); background: var(--rbtn); padding: 8px; border-radius: 8px; }
+.sm-ml { display: flex; flex-wrap: wrap; gap: 6px 8px; margin: -.6em 0 1.2em; }
+.sm-ml .vref { font-family: var(--f-body); font-size: 12.5px; padding: 6px 9px; min-height: 32px; border-radius: 8px; background: var(--rbtn); border: 1px solid var(--rline); color: var(--rmut); }
+.sm-ol { margin: 0 0 8px; padding-left: 20px; } .sm-ol li { margin: 2px 0; }
+/* 말씀 탭의 설교 목록 */
+.sm-sec { margin-top: 26px; }
+.sm-grp { margin: 10px 0 0; }
+.sm-grp > summary { cursor: pointer; display: flex; align-items: baseline; gap: 8px; padding: 9px 4px; font-family: var(--f-body); color: var(--ink); border-bottom: 2px dashed var(--edge2); }
+.sm-grp > summary small { color: var(--cocoa-soft); font-size: 12px; }
+.sm-li { display: block; width: 100%; text-align: left; font: inherit; font-family: var(--f-body); padding: 10px 12px; margin: 8px 0 0; border-radius: 12px; border: 2px solid var(--edge2); background: #fff; color: var(--ink); line-height: 1.35; cursor: pointer; }
+.sm-li b { display: block; font-size: 14px; }
+.sm-li small { display: block; font-size: 11.5px; color: var(--cocoa-soft); margin-top: 3px; }
+.sm-li.done { border-color: #B9A0FF; background: #F6F2FF; }
+.sm-li.done b::before { content: "✓ "; color: #7253BD; }
+.reader sup.sm { color: var(--rq); font-weight: 700; }
+.reader sup.sm::after { content: "•"; color: var(--rq); margin-left: 1px; }

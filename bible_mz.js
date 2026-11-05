@@ -6,7 +6,7 @@
      설교 전문을 끝까지 읽으면 달란트(처음 +3, 다시 읽기 +1, 같은 설교는 하루 한 번).
    유엘이키우기의 읽기 보상(끝까지 읽고 시간 차면 체크·달란트)은 그대로. 이 파일은 index.html 본문 스크립트 뒤에 붙어 renderReader·openReader·rdEndHTML을 덮어씀. */
 (function () {
-  const MZ_VER = "y8";
+  const MZ_VER = "y9";
   const $ = id => document.getElementById(id);
   const bibleMz = new Map(), bibleX = new Map(), bibleNt = new Map(), bibleHe = new Map();
   let bibleLin = null, bibleLinP = null, XB = null;

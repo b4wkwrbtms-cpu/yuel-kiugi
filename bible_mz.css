@@ -182,3 +182,6 @@
 .sm-li.done b::before { content: "✓ "; color: #7253BD; }
 .reader sup.sm { color: var(--rq); font-weight: 700; }
 .reader sup.sm::after { content: "•"; color: var(--rq); margin-left: 1px; }
+
+.reader .rdbody sup.vn-t.fx { color: #ffb454; } .reader .rdbody sup.vn-t.fx::after { content: "✎"; font-size: .85em; margin-left: 1px; }
+.vm .fx-row { margin: .2em 0; } .vm .fx-row b { margin-right: .4em; opacity: .75; font-weight: 600; } .vm .fx-row s { opacity: .6; }

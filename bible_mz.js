@@ -6,7 +6,7 @@
      설교 전문을 끝까지 읽으면 달란트(처음 +3, 다시 읽기 +1, 같은 설교는 하루 한 번).
    유엘이키우기의 읽기 보상(끝까지 읽고 시간 차면 체크·달란트)은 그대로. 이 파일은 index.html 본문 스크립트 뒤에 붙어 renderReader·openReader·rdEndHTML을 덮어씀. */
 (function () {
-  const MZ_VER = "y16";
+  const MZ_VER = "y17";
   const $ = id => document.getElementById(id);
   const bibleMz = new Map(), bibleX = new Map(), bibleNt = new Map(), bibleHe = new Map();
   let bibleLin = null, bibleLinP = null, XB = null;
@@ -96,7 +96,8 @@
       const fi = folds.findIndex(f => n >= f[0] && n <= f[1]);
       if (fi >= 0) { if (!op[fi]) { if (n === folds[fi][0]) html += foldCard(folds[fi], fi, fi > 0 && folds[fi - 1][3] === folds[fi][3]); continue; } if (n === folds[fi][0]) html += `<button type="button" class="rd-fold-close" data-r="fold-close" data-i="${fi}">▲ ${esc(folds[fi][3])} · 다시 접기</button>`; }
       const sv = smvOf(b, c), hasS = !!(sv && sv.v && sv.v[n]), hasM = !!(x && x.vn && x.vn[n]), hasF = hasM && x.vn[n].some(m => m.fx), canTap = b <= 11 || hasM || hasS;
-      const num = o.nonum ? "" : `<sup class="${canTap ? "vn-t" : ""}${hasF ? " fx" : hasM ? " has" : ""}${hasS ? " sm" : ""}"${canTap ? ` data-r="vn" data-vn="${n}" role="button" tabindex="0"` : ""}>${n}</sup>`;
+      const vkM = hasM ? x.vn[n] : [], kKr = vkM.some(m => m.fx), kIx = vkM.some(m => m.ix || (!m.fx && m.m !== "사본 차이")), kMs = vkM.some(m => m.m === "사본 차이"), vkDots = (kKr ? '<i class="vd kr"></i>' : "") + (kIx ? '<i class="vd ix"></i>' : "") + (kMs ? '<i class="vd ms"></i>' : "") + (hasS ? '<i class="vd sm"></i>' : ""), vkCls = " vk" + (kKr ? " k-kr" : kIx ? " k-ix" : kMs ? " k-ms" : hasS ? " k-sm" : "");
+      const num = o.nonum ? "" : `<sup class="${canTap ? "vn-t" : ""}${hasF ? " fx" : hasM ? " has" : ""}${hasS ? " sm" : ""}${vkCls}"${canTap ? ` data-r="vn" data-vn="${n}" role="button" tabindex="0"` : ""}>${n}${vkDots}</sup>`;
       if (mz) {
         const labs = {}; if (o.sp && x && x.sp && x.sp[n]) x.sp[n].forEach(l => { if (!labs[l[0]]) labs[l[0]] = l; });
         const links = o.ln && x && x.ln ? x.ln[n] : null;
@@ -202,13 +203,14 @@
       let h = `<div class="nt-head"><span class="nt-badge k-hebrew">${ot ? "원어로 보기" : "본문 메모"}</span><small>${esc(ref)}</small></div>`;
       if (heV) h += `<p class="he-verse" dir="rtl" lang="he">${esc(heV)}</p><p class="nt-cap">히브리어 본문: 레닌그라드 사본(WLC). 오른쪽에서 왼쪽으로 읽어요.</p>`;
       const ms0 = x && x.vn && x.vn[n] || [], fx = ms0.filter(m => m.fx), ms = ms0.filter(m => !m.fx && !m.ix);
-      if (fx.length) h += `<h4>개역한글과 달라진 곳</h4>` + fx.map(m => `<div class="vm">${m.he || m.rd ? `<div class="tms">${heTerm([m.he, m.rd, m.gl || "원어"])}</div>` : ""}${m.krv ? `<p class="fx-row"><b>개역한글</b> “${esc(m.krv)}”</p>` : ""}${m.was && m.was !== m.now ? `<p class="fx-row"><b>고치기 전</b> <s>${esc(m.was)}</s></p>` : ""}<p class="fx-row"><b>${m.mk ? "우리 본문" : "원어대로 고침"}</b> <mark>${esc(m.now)}</mark></p><p>${refHtml(m.t || "")}</p></div>`).join("");
-      if (ms.length) h += `<h4>${ot ? "원어 메모" : "사본 메모"}</h4>` + ms.map(m => `<div class="vm">${m.he || m.rd ? `<div class="tms">${heTerm([m.he, m.rd, m.m])}</div>` : (m.m ? `<p class="nt-form">${esc(m.m)}</p>` : "")}<p>${refHtml(m.t)}</p></div>`).join("") + (ot ? "" : `<p class="nt-cap">사본마다 조금씩 다른 곳을 적어 둔 메모예요.</p>`);
+      if (fx.length) h += `<h4 class="vk-h kr">개역한글과 달라진 곳</h4>` + fx.map(m => `<div class="vm">${m.he || m.rd ? `<div class="tms">${heTerm([m.he, m.rd, m.gl || "원어"])}</div>` : ""}${m.krv ? `<p class="fx-row"><b>개역한글</b> “${esc(m.krv)}”</p>` : ""}${m.was && m.was !== m.now ? `<p class="fx-row"><b>고치기 전</b> <s>${esc(m.was)}</s></p>` : ""}<p class="fx-row"><b>${m.mk ? "우리 본문" : "원어대로 고침"}</b> <mark>${esc(m.now)}</mark></p><p>${refHtml(m.t || "")}</p></div>`).join("");
+      if (ms.length) h += `<h4 class="vk-h ${ot ? "ix" : "ms"}">${ot ? "원어 메모" : "사본 메모"}</h4>` + ms.map(m => `<div class="vm">${m.he || m.rd ? `<div class="tms">${heTerm([m.he, m.rd, m.m])}</div>` : (m.m ? `<p class="nt-form">${esc(m.m)}</p>` : "")}<p>${refHtml(m.t)}</p></div>`).join("") + (ot ? "" : `<p class="nt-cap">사본마다 조금씩 다른 곳을 적어 둔 메모예요.</p>`);
       else if (ot && !fx.length) h += `<p class="rdmsg">이 절에는 따로 단 원어 메모가 없어요.</p>`;
       const ln = x && x.ln && x.ln[n] || [];
       if (ln.length) { const nt = bibleNt.get(b); h += `<h4>이 절의 해설</h4><div class="nt-chips">${ln.map(l => `<button type="button" class="nt-chip ${NK[l[2]] ? NK[l[2]][1] : ""}" data-r="nt" data-nt="${esc(l[0])}">${esc(nt && nt[l[0]] ? nt[l[0]].t : l[1])}</button>`).join("")}</div>`; }
       const svv = (smvOf(b, c) || {}).v, sml = svv && svv[n] || [];
-      if (sml.length) h += `<h4>설교에서 이 말씀</h4>` + sml.map(m => smMentionHtml(m, true)).join("");
+      if (sml.length) h += `<h4 class="vk-h sm">설교에서 이 말씀</h4>` + sml.map(m => smMentionHtml(m, true)).join("");
+      h += `<p class="vk-legend"><i class="vd kr"></i>빨강: 개역한글과 달라진 곳<i class="vd ix"></i>파랑: 원어로 본 중요한 의미·해석<i class="vd ms"></i>보라: 사본 차이<i class="vd sm"></i>초록: 설교에서 다룬 절</p>`;
       sheet(h, `${BOOKS[b][0]} ${c + 1}장`);
     };
     sheet(`<p class="rdmsg">불러오는 중…</p>`, `${BOOKS[b][0]} ${c + 1}장`);
@@ -240,7 +242,7 @@
     const add = m => { const k = m.join("#"); if (!seen.has(k)) { seen.add(k); ms.push(m); } };
     for (let n = v1; n <= v2; n++) (sv.v && sv.v[n] || []).forEach(add);
     (sv.ch || []).forEach(add);
-    return ms.length ? `<h4>설교에서 이 말씀</h4>` + ms.map(m => smMentionHtml(m, true)).join("") : "";
+    return ms.length ? `<h4 class="vk-h sm">설교에서 이 말씀</h4>` + ms.map(m => smMentionHtml(m, true)).join("") : "";
   }
   const smChips = list => list.map(s => `<button type="button" class="nt-chip k-sm" data-r="sm" data-sm="${esc(s.sid)}">${esc(s.title)} · ${esc(s.preacher)} 목사</button>`).join("");
   const smtBtn = sid => `<button type="button" class="btn violet sm-full" data-r="smt" data-smt="${esc(sid)}">설교 전문 읽기</button>`;

@@ -185,3 +185,14 @@
 
 .reader .rdbody sup.vn-t.fx { color: #ffb454; } .reader .rdbody sup.vn-t.fx::after { content: "✎"; font-size: .85em; margin-left: 1px; }
 .vm .fx-row { margin: .2em 0; } .vm .fx-row b { margin-right: .4em; opacity: .75; font-weight: 600; } .vm .fx-row s { opacity: .6; }
+
+/* 11-25 절 번호 색: 빨강 개역한글과 달라진 곳 · 파랑 원어로 본 중요한 의미·해석 · 보라 사본 차이 · 초록 설교에서 다룬 절 */
+sup.vk::after { content: none !important; }
+sup.vk.k-kr { color: #d63a3a !important; font-weight: 800; }
+sup.vk.k-ix { color: #2f6fdb !important; font-weight: 800; }
+sup.vk.k-ms { color: #8b5cf6 !important; font-weight: 700; }
+sup.vk.k-sm { color: #2f9e5b !important; font-weight: 800; }
+i.vd { display: inline-block; width: .42em; height: .42em; border-radius: 50%; margin-left: 2px; vertical-align: .18em; font-style: normal; }
+i.vd.kr { background: #d63a3a; } i.vd.ix { background: #2f6fdb; } i.vd.ms { background: #8b5cf6; } i.vd.sm { background: #2f9e5b; }
+h4.vk-h.kr { color: #d63a3a; } h4.vk-h.ix { color: #2f6fdb; } h4.vk-h.ms { color: #8b5cf6; } h4.vk-h.sm { color: #2f9e5b; }
+p.vk-legend { font-size: .78em; opacity: .8; margin-top: 1.2em; line-height: 1.9; } p.vk-legend i.vd { margin: 0 3px 0 8px; }
